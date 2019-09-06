@@ -189,3 +189,91 @@ import store from './store';
 ```
 
 -  Nesse momento já deve ter aparecido a Connection no App do Reactotron
+
+# Immer
+É utilizado para facilitar na hora de manipular o `state` mantendo o conceito de imutabilidade. Ele faz uma cópia do `state` (draft), manipulamos esse `draft` e ele retorna o novo `state` de acordo as manipulacões que realizamos.
+
+```bash
+yarn add immer
+```
+- Exemplo do uso do `immer`
+```js
+import produce from 'immer';
+
+export default function cart(state = [], action) {
+  switch (action.type) {
+    case '@cart/ADD':
+      return produce(state, draft => {
+        const productIndex = draft.findIndex(p => p.id === action.product.id);
+        if (productIndex >= 0) {
+          draft[productIndex].amount += 1;
+        } else {
+          draft.push({
+            ...action.product,
+            amount: 1,
+          });
+        }
+      });
+    case '@cart/REMOVE':
+      return produce(state, draft => {
+        const productIndex = draft.findIndex(p => p.id === action.id);
+
+        if (productIndex >= 0) {
+          draft.splice(productIndex, 1);
+        }
+      });
+    default:
+      return state;
+  }
+}
+```
+
+## Refatorando as Actions
+- Criar um arquivo `actions.js` em `src/store/modules/cart/actions.js`
+
+```js
+// exemplo de uma action
+export function addToCart(product) {
+  return {
+    type: '@cart/ADD',
+    product,
+  };
+}
+
+export function removeFromCart(id) {
+  return {
+    type: '@cart/REMOVE',
+    id,
+  };
+}
+```
+
+### Utilizando o arquivo de actions
+
+```js
+...
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+...
+import * as CartActions from '../../store/modules/cart/actions';
+
+function Cart({ cart, removeFromCart }) {
+  return (
+    <Container>
+      <button
+        type="button"
+        onClick={() => removeFromCart(product.id)}
+      >
+    </Container>
+  );
+}
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(CartActions, dispatch);
+
+const mapStateToProps = state => ({
+  cart: state.cart,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Cart);
+```

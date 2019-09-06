@@ -136,4 +136,55 @@ export default connect(state => ({
 ```bash
 yarn add reactotron-react-js reactotron-redux
 ```
-- criar uma pasta `src/config/ReactotronConfig.js`
+- criar um arquivo em `src/config/ReactotronConfig.js`
+
+```js
+//ReactotronConfig.js
+import Reactotron from 'reactotron-react-js';
+import { reactotronRedux } from 'reactotron-redux';
+
+// Quando utiliza-se o create react app, ele adiciona essa variavel NODE_ENV quando inicia um `yarn start`
+if (process.env.NODE_ENV === 'development') {
+  const tron = Reactotron.configure()
+    .use(reactotronRedux())
+    .connect();
+
+  tron.clear();
+
+  console.tron = tron;
+}
+```
+
+- No arquivo `src/store/index.js` adicionar o enhancer
+```js
+import { createStore } from 'redux';
+
+import rootReducer from './modules/rootReducer';
+
+const enhancer =
+  process.env.NODE_ENV === 'development' ? console.tron.createEnhancer() : null;
+
+const store = createStore(rootReducer, enhancer);
+
+export default store;
+```
+
+- No arquivo `src/app.js` importar as config do reactotron
+> OBS: o import deve ser antes do import do store
+
+```js
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+
+import './config/ReactotronConfig'; //Antes do store!!
+
+import GlobalStyles from './styles/global';
+import Header from './components/Header';
+import Routes from './routes';
+
+import store from './store';
+...
+```
+
+-  Nesse momento já deve ter aparecido a Connection no App do Reactotron

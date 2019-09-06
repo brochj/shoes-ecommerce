@@ -75,33 +75,65 @@ export default App;
 -
 ```js
 // cart reducer
-export default function cart(state, action) {
-  return [];
+export default function cart(state = [], action) {
+  switch (action.type) {
+    case 'ADD_TO_CART':
+      return [...state, action.product];
+
+    default:
+      return state;
+  }
 }
 ```
 
 ## Utilizando o Redux
 
-### Fazer a conexao
+### Fazer a conexao e disparar a action
 - No componente/page que terá conexão com o reducer, fazer a conexao
 
 ```js
 ...
 import { connect } from 'react-redux';
 ...
-
-import { ProductList } from './styles';
-
 class Home extends React.Component {
   ...
-  }
+  handleAddProduct = product => {
+    const { dispatch } = this.props;
 
-  render() {
-   ...
-  }
+    dispatch({
+      type: 'ADD_TO_CART',
+      product,
+    });
+  };
+
+  render() {...}
 }
 
 export default connect()(Home);
 ```
 
-- Quando utiliza-se o `dispatch()` todos os reducers são ativados, por isso que temos que realizar uma verificação das actions.
+- Quando utiliza-se o `dispatch()` todos os reducers são ativados, por isso que temos que realizar uma verificação das action.type.
+
+### Lendo arquivos dos states
+- Fazer a conexao do o redux e passar qual state que ler.
+
+```js
+...
+import { connect } from 'react-redux';
+...
+function Header({ cart }) {
+  console.log(cart);
+  return (...);
+}
+
+export default connect(state => ({
+  cart: state.cart,
+}))(Header);
+```
+
+# Debbug com Reactotron
+
+```bash
+yarn add reactotron-react-js reactotron-redux
+```
+- criar uma pasta `src/config/ReactotronConfig.js`

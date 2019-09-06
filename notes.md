@@ -75,12 +75,33 @@ export default App;
 -
 ```js
 // cart reducer
-export default function cart() {
+export default function cart(state, action) {
   return [];
 }
 ```
 
 ## Utilizando o Redux
 
+### Fazer a conexao
+- No componente/page que terá conexão com o reducer, fazer a conexao
 
+```js
+...
+import { connect } from 'react-redux';
+...
 
+import { ProductList } from './styles';
+
+class Home extends React.Component {
+  ...
+  }
+
+  render() {
+   ...
+  }
+}
+
+export default connect()(Home);
+```
+
+- Quando utiliza-se o `dispatch()` todos os reducers são ativados, por isso que temos que realizar uma verificação das actions.

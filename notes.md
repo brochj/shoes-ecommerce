@@ -126,9 +126,10 @@ function Header({ cart }) {
   return (...);
 }
 
-export default connect(state => ({
+const mapStateToProps = state => ({
   cart: state.cart,
-}))(Header);
+});
+export default connect(mapStateToProps)(Cart);
 ```
 
 # Debbug com Reactotron

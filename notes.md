@@ -299,6 +299,7 @@ dispara a action 1 -> Reducer
 dispara a action -> (action-saga executada) -> dispara action 1 -> Reducer
 ```
 ### Exemplo
+#### Actions
 - Como agora tem uma action a mais, mudar no arquivo `store/modules/cart/actions.js`
 
 ```js
@@ -333,7 +334,17 @@ export function addToCartSuccess(product) {
 - `addToCartRequest()` é a action disparada pelo usuário lá no front-end e ouvida pelo redux-saga
 - `addToCartSuccess()` é a action disparada pelo redux-saga e ouvida pelo reducer
 
+#### Reducer
+- No reducer mudar o tipo de action que está sendo ouvida, no caso de `@cart/ADD` para `@cart/ADD_SUCCESS`
+```js
+...
+switch (action.type) {
+    case '@cart/ADD_SUCCESS':
+      return produce(state, draft =>
+...
+```
 
+#### Sagas
 - Em `store/modules/cart/sagas.js`
 
 ```js
@@ -353,6 +364,7 @@ function* addToCart({ id }) {
 export default all([takeLatest('@cart/ADD_REQUEST', addToCart)]);
 ```
 
+#### rootSaga
 - Fazer o load de todos os sagas `store/modules/rootSaga.js`
 
 ```js
@@ -365,6 +377,7 @@ export default function* rootSaga() {
 }
 ```
 
+#### Carregando o redux-saga
 - Em `store/index.js` fazer a configuração do redux-saga
 
 ```js
@@ -374,7 +387,7 @@ import createSagaMiddleware from 'redux-saga';
 import rootReducer from './modules/rootReducer';
 import rootSaga from './modules/rootSaga';
 
-const sagaMiddleware = createSagaMiddleware(rootSaga);
+const sagaMiddleware = createSagaMiddleware();
 
 const enhancer =
   process.env.NODE_ENV === 'development'
@@ -390,3 +403,44 @@ sagaMiddleware.run(rootSaga);
 
 export default store;
 ```
+
+## Reactotron + Saga
+```bash
+yarn add reactotron-redux-saga
+```
+
+### Configurando o Reactotron
+
+```js
+import Reactotron from 'reactotron-react-js';
+import { reactotronRedux } from 'reactotron-redux';
+import reactotronSaga from 'reactotron-redux-saga';
+
+if (process.env.NODE_ENV === 'development') {
+  const tron = Reactotron.configure()
+    .use(reactotronRedux())
+    .use(reactotronSaga())
+    .connect();
+
+  tron.clear();
+
+  console.tron = tron;
+}
+```
+
+### Criando o saga monitor
+- Em `store/index.js`  fazer as alterações
+
+```js
+...
+const sagaMonitor =
+  process.env.NODE_ENV === 'development'
+    ? console.tron.createSagaMonitor()
+    : null;
+
+const sagaMiddleware = createSagaMiddleware({
+  sagaMonitor,
+});
+...
+```
+

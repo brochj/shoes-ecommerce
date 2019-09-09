@@ -277,3 +277,116 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, mapDispatchToProps)(Cart);
 ```
+
+# Redux Saga
+
+```bash
+yarn add redux-saga
+```
+
+- O Saga vai funcionar como um middleware. O fluxo será o seguinte:
+1. O usuário dispara uma action que está sendo ouvida pelo saga em `store/modules/cart/sagas.js` (exemplo)
+2. A action do saga faz o que precisa fazer, tipo um requisição.
+3. Quando termina a action do saga, o próprio saga dispara uma action
+4. E essa action está sendo ouvida pelo reducer.
+5. Reducer faz as alterações de estados necessárias.
+
+```js
+// Sem Redux-saga
+dispara a action 1 -> Reducer
+
+// Com Redux-saga
+dispara a action -> (action-saga executada) -> dispara action 1 -> Reducer
+```
+### Exemplo
+- Como agora tem uma action a mais, mudar no arquivo `store/modules/cart/actions.js`
+
+```js
+// Sem redux saga
+export function addToCartRequest(product) {
+  return {
+    type: '@cart/ADD',
+    id,
+  };
+}
+...
+```
+Para
+
+```js
+// Com redux saga
+export function addToCartRequest(id) {
+  return {
+    type: '@cart/ADD_REQUEST',
+    id,
+  };
+}
+export function addToCartSuccess(product) {
+  return {
+    type: '@cart/ADD_SUCCESS',
+    product,
+  };
+}
+...
+```
+
+- `addToCartRequest()` é a action disparada pelo usuário lá no front-end e ouvida pelo redux-saga
+- `addToCartSuccess()` é a action disparada pelo redux-saga e ouvida pelo reducer
+
+
+- Em `store/modules/cart/sagas.js`
+
+```js
+import { call, put, all, takeLatest } from 'redux-saga/effects';
+import api from '../../../services/api';
+
+import { addToCartSuccess } from './actions';
+
+function* addToCart({ id }) {
+  const response = yield call(api.get, `/products/${id}`);
+
+  // put é para disparar actions
+  yield put(addToCartSuccess(response.data));
+}
+
+// all é pra ficar ouvindo as actions
+export default all([takeLatest('@cart/ADD_REQUEST', addToCart)]);
+```
+
+- Fazer o load de todos os sagas `store/modules/rootSaga.js`
+
+```js
+import { all } from 'redux-saga/effects';
+
+import cart from './cart/sagas';
+
+export default function* rootSaga() {
+  return yield all([cart]);
+}
+```
+
+- Em `store/index.js` fazer a configuração do redux-saga
+
+```js
+import { createStore, applyMiddleware, compose } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+
+import rootReducer from './modules/rootReducer';
+import rootSaga from './modules/rootSaga';
+
+const sagaMiddleware = createSagaMiddleware(rootSaga);
+
+const enhancer =
+  process.env.NODE_ENV === 'development'
+    ? compose(
+        console.tron.createEnhancer(),
+        applyMiddleware(sagaMiddleware)
+      )
+    : applyMiddleware(sagaMiddleware);
+
+const store = createStore(rootReducer, enhancer);
+
+sagaMiddleware.run(rootSaga);
+
+export default store;
+```

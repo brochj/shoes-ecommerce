@@ -444,6 +444,59 @@ const sagaMiddleware = createSagaMiddleware({
 ...
 ```
 
+## Navegação com Redux-saga
+```bash
+yarn add history
+```
+- Em `services/history.js`
+
+```js
+import { createBrowserHistory } from 'history';
+
+const history = createBrowserHistory();
+
+export default history;
+```
+- Em `app.js` mudar de `BrowserRouter` para `Router` e adicionar o history como propriedade
+
+```js
+import React from 'react';
+import { Router } from 'react-router-dom';
+import { Provider } from 'react-redux';
+...
+import history from './services/history';
+..
+function App() {
+  return (
+    <Provider store={store}>
+      <Router history={history} >
+        <Header />
+        <Routes />
+        <GlobalStyles />
+        <ToastContainer autoClose={3000} />
+      </Router >
+    </Provider>
+  );
+}
+export default App;
+```
+## Utilizando o history
+- A navegação só será feita depois que terminar a chamada a api.
+- Em algum arquivo `sagas.js`
+
+```js
+import { call, select, put, all, takeLatest } from 'redux-saga/effects';
+...
+import history from '../../../services/history';
+...
+function* addToCart() {
+ // alguma chama na api
+    history.push('/cart');
+  }
+}
+```
+
+
 
 # React Tostify
 ```bash
